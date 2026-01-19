@@ -52,6 +52,7 @@ class RootBuilder(BaseBuilder):
         return self.site
 
     def _load_urls_from_root(self):
+        print(settings.SEO_MAP_URL)
         urls = []
         if settings.SEO_MAP_URL:
             response = urllib.request.urlopen(settings.SEO_MAP_URL)
