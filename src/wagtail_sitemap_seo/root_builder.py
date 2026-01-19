@@ -1,6 +1,7 @@
 import xml.etree.cElementTree as ET
 import csv
 import urllib.request
+from wagtail.models import Site
 
 from wagtail.models import Page
 from wagtail.models import Locale
@@ -8,6 +9,9 @@ from wagtail.models import Locale
 from django.conf import settings
 
 from .base import BaseBuilder
+
+
+site = Site.objects.get(is_default_site=True)
 
 
 def email_management_enabled():
@@ -20,7 +24,7 @@ class RootBuilder(BaseBuilder):
         self.root_file = root_file
         self.root_pages = []
         self.page_url_map = {}
-        self.site = None
+        self.site = site.site_name
 
     def site_map_init(self, root=False):
         xml_root = ET.Element('urlset')
@@ -57,7 +61,7 @@ class RootBuilder(BaseBuilder):
 
             for row in cr:
                 urls.append(row[0])
-            self.site = urls[0]
+
             urls.remove(self.site)
 
             # TODO: perhaps add multisite support
