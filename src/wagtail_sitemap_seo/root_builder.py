@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+from io import BytesIO
 import xml.etree.cElementTree as ET
 import csv
 import urllib.request
@@ -9,6 +12,7 @@ from wagtail.models import Locale
 from django.conf import settings
 
 from .base import BaseBuilder
+from .s3_helper import save_xml
 
 
 site = Site.objects.get(is_default_site=True)
@@ -26,6 +30,7 @@ class RootBuilder(BaseBuilder):
         self.page_url_map = {}
         self.site = site.site_name
 
+
     def site_map_init(self, root=False):
         xml_root = ET.Element('urlset')
         xml_root.attrib['xmlns:xsi'] = "https://www.w3.org/2001/XMLSchema-instance"
@@ -35,6 +40,7 @@ class RootBuilder(BaseBuilder):
         xml_root.attrib['xmlns'] = "https://www.sitemaps.org/schemas/sitemap/0.9"
 
         return xml_root
+
 
     def add_xml_root(self, xml_root):
         sitemap_index = ET.Element('sitemapindex')
@@ -46,7 +52,19 @@ class RootBuilder(BaseBuilder):
 
         xml_root.append(sitemap_index)
         tree = ET.ElementTree(xml_root)
-        tree.write('root_map.xml', encoding='utf-8', xml_declaration=True)
+
+        if settings.SITEMAP_WRITE_S3:
+
+            buffer = BytesIO()
+            tree.write(buffer, encoding='utf-8', xml_declaration=True)
+            content = buffer.getvalue()
+
+            if settings.SITEMAP_DIR:
+                save_xml('{}/root_map.xml'.format(settings.SITEMAP_DIR), content)
+            else:
+                save_xml('root_map.xml', content)
+        else:
+            tree.write('root_map.xml', encoding='utf-8', xml_declaration=True)
 
     def get_site(self):
         return self.site
@@ -80,4 +98,3 @@ class RootBuilder(BaseBuilder):
                 else:
                     self.page_url_map[series] = p[0]
                     self.root_pages.append(p[0])
-                print(self.root_pages)

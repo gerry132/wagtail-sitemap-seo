@@ -1,12 +1,6 @@
-# -*- coding: utf-8 -*-
-from django.urls import path
-
-from .views import SiteMapView
-
+from django.urls import re_path
+from .views import SitemapProxyView
 
 urlpatterns = [
-    path(
-        '<str:file_name>/',
-        SiteMapView.as_view()
-    )
+    re_path(r"^(?P<file_name>[-\w]+)\.xml$", SitemapProxyView.as_view(), name="sitemap_proxy"),
 ]

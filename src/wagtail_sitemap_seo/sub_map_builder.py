@@ -1,8 +1,13 @@
+from io import BytesIO
 from .root_builder import RootBuilder
 from wagtail.models import Locale
 from datetime import datetime
 
 import xml.etree.cElementTree as ET
+
+from django.conf import settings
+
+from .s3_helper import save_xml
 
 
 class MapBuilder(RootBuilder):
@@ -20,7 +25,19 @@ class MapBuilder(RootBuilder):
             new_map.append(elem)
         title = page.title.replace(' ', '').lower()
         tree = ET.ElementTree(new_map)
-        tree.write('map_{}.xml'.format(title), encoding='utf-8', xml_declaration=True)
+
+        if settings.SITEMAP_WRITE_S3:
+
+            buffer = BytesIO()
+            tree.write(buffer, encoding='utf-8', xml_declaration=True)
+            content = buffer.getvalue()
+            if settings.SITEMAP_DIR:
+                save_xml('{}/map_{}.xml'.format(settings.SITEMAP_DIR, title), content)
+            else:
+                save_xml('map_{}.xml'.format(title), content)
+        else:
+            tree.write('map_{}.xml'.format(title), encoding='utf-8', xml_declaration=True)
+
 
     def build_root_elem(self, url):
         sitemap_elem = ET.Element('sitemap')
@@ -29,7 +46,8 @@ class MapBuilder(RootBuilder):
         print(url)
 
         # TODO: perhaps load path from settings?
-        loc_elem.text = 'https://' + self.get_site() + '/sitemap/map_{}/'.format(url.title.replace(' ', '').lower())
+
+        loc_elem.text = 'https://' + self.get_site() + '/sitemap/map_{}.xml'.format(url.title.replace(' ', '').lower())
         published_elem.text = self._format_date(datetime.today())
 
         sitemap_elem.append(loc_elem)
