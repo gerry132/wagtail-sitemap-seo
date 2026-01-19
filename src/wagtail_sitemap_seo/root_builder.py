@@ -64,9 +64,9 @@ class RootBuilder(BaseBuilder):
                 urls.append(row[0])
 
             # TODO: perhaps add multisite support
-
+            print(urls)
             for series in urls:
-
+                print(urls)
                 locale = Locale.objects.get(language_code='en')
                 p = Page.objects.live().filter(slug=series.strip("/"), locale=locale)
                 if len(p) > 1:
