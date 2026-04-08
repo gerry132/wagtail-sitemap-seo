@@ -47,28 +47,31 @@ class RootBuilder(BaseBuilder):
     # XML generation
     # -----------------------------
     def site_map_init(self, root: bool = False):
-        xml_root = ET.Element("urlset")
-        xml_root.attrib["xmlns:xsi"] = "https://www.w3.org/2001/XMLSchema-instance"
-        xml_root.attrib["xmlns:xhtml"] = "https://www.w3.org/1999/xhtml"
+        if not root:
+            xml_root = ET.Element("urlset")
+        else:
+            return
+
+        xml_root.attrib["xmlns:xsi"] = "http://www.w3.org/2001/XMLSchema-instance"
+        xml_root.attrib["xmlns:xhtml"] = "http://www.w3.org/1999/xhtml"
         xml_root.attrib["xsi:schemaLocation"] = (
-            "https://www.sitemaps.org/schemas/sitemap/0.9"
-            + " https://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd"
+            "http://www.sitemaps.org/schemas/sitemap/0.9"
+            + " http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd"
         )
-        xml_root.attrib["xmlns"] = "https://www.sitemaps.org/schemas/sitemap/0.9"
+        xml_root.attrib["xmlns"] = "http://www.sitemaps.org/schemas/sitemap/0.9"
         return xml_root
 
     def add_xml_root(self, xml_root):
-        sitemap_index = ET.Element("sitemapindex")
-        sitemap_index.attrib["xmlns"] = "http://www.sitemaps.org/schemas/sitemap/0.9"
+        xml_root = ET.Element("sitemapindex")
+        xml_root.attrib["xmlns"] = "http://www.sitemaps.org/schemas/sitemap/0.9"
 
         for page in self.root_pages:
             # IMPORTANT: BaseBuilder.build_root_elem should not rely on page.get_url()
             # outside a request. Prefer:
             #   page.relative_url(self._site_obj)  OR  page.get_full_url(site=self._site_obj)
             elem = self.build_root_elem(page)
-            sitemap_index.append(elem)
+            xml_root.append(elem)
 
-        xml_root.append(sitemap_index)
         tree = ET.ElementTree(xml_root)
 
         out_name = "root_map.xml"
@@ -86,7 +89,7 @@ class RootBuilder(BaseBuilder):
             logger.info("[root-sitemap] Wrote sitemap index locally: %s", out_name)
 
     def get_site(self):
-        return self.site
+        return "www." + self.site
 
     # -----------------------------
     # Helpers

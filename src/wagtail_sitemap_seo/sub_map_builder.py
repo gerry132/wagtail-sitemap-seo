@@ -2,6 +2,7 @@ from io import BytesIO
 from .root_builder import RootBuilder
 from wagtail.models import Locale
 from datetime import datetime
+import re
 
 import xml.etree.cElementTree as ET
 
@@ -23,7 +24,7 @@ class MapBuilder(RootBuilder):
         for p in pages:
             elem = self.build_url_elem(p)
             new_map.append(elem)
-        title = page.title.replace(' ', '').lower()
+        title = re.sub(r"[^a-zA-Z]", "", page.title).lower()
         tree = ET.ElementTree(new_map)
 
         if settings.SITEMAP_WRITE_S3:
@@ -46,8 +47,8 @@ class MapBuilder(RootBuilder):
         print(url)
 
         # TODO: perhaps load path from settings?
-
-        loc_elem.text = 'https://' + self.get_site() + '/sitemap/map_{}.xml'.format(url.title.replace(' ', '').lower())
+        title = re.sub(r"[^a-zA-z]", "", url.title).lower()
+        loc_elem.text = 'https://' + self.get_site() + '/sitemap/map_{}.xml'.format(title.lower())
         published_elem.text = self._format_date(datetime.today())
 
         sitemap_elem.append(loc_elem)

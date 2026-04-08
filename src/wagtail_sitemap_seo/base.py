@@ -17,7 +17,7 @@ class BaseBuilder:
         publish_elem = ET.Element('lastmod')
 
         publish_elem.text = self._format_date(url.last_published_at)
-        loc_elem.text = url.full_url
+        loc_elem.text = url.full_url.replace("https://", "https://www.")
         url_elem.append(loc_elem)
         url_elem.append(publish_elem)
 
@@ -26,18 +26,18 @@ class BaseBuilder:
             lang_elem = ET.Element('xhtml:link')
             lang_elem.attrib['rel'] = 'alternate'
             lang_elem.attrib['hreflang'] = trans.locale.language_code
-            lang_elem.attrib['href'] = trans.full_url
+            lang_elem.attrib['href'] = trans.full_url.replace("https://", "https://www.")
 
             url_elem.append(lang_elem)
         lang_elem = ET.Element('xhtml:link')
         lang_elem.attrib['rel'] = 'alternate'
         lang_elem.attrib['hreflang'] = 'en'
-        lang_elem.attrib['href'] = url.full_url
+        lang_elem.attrib['href'] = url.full_url.replace("https://", "https://www.")
         url_elem.append(lang_elem)
 
         lang_elem_default = ET.Element('xhtml:link')
         lang_elem_default.attrib['rel'] = 'alternate'
         lang_elem_default.attrib['hreflang'] = 'x-default'
-        lang_elem_default.attrib['href'] = url.full_url
+        lang_elem_default.attrib['href'] = url.full_url.replace("https://", "https://www.")
         url_elem.append(lang_elem_default)
         return url_elem
